@@ -89,7 +89,7 @@ module AssetPlayerTags
     <pre><code><r:if_playable_assets>...</r:if_playable_assets></code></pre>
   }    
   tag "if_playable_assets" do |tag|
-    tag.expand if tag.locals.page.assets.playable.count > 0
+    tag.expand if tag.locals.page.assets.playables.count > 0
   end
   
   desc %{
@@ -99,7 +99,7 @@ module AssetPlayerTags
     <pre><code><r:unless_playable_assets>...</r:unless_playable_assets></code></pre>
   }    
   tag "unless_playable_assets" do |tag|
-    tag.expand unless tag.locals.page.assets.playable.count > 0
+    tag.expand unless tag.locals.page.assets.playables.count > 0
   end
   
   desc %{
@@ -107,7 +107,7 @@ module AssetPlayerTags
     Other options exactly as for r:assets:each.
   }    
   tag "assets:each_playable" do |tag|
-    tag.locals.assets ||= tag.locals.page.assets.playable.find(:all, assets_find_options(tag))
+    tag.locals.assets ||= tag.locals.page.assets.playables.find(:all, assets_find_options(tag))
     tag.locals.assets.each do |asset|
       tag.locals.asset = asset
       result << tag.expand
@@ -119,7 +119,7 @@ module AssetPlayerTags
     References the first playable asset attached to the current page. If there is no such asset, nothing is rendered.
   }    
   tag "assets:first_playable" do |tag|
-    tag.expand if tag.locals.asset = tag.locals.page.assets.playable.find(:first)
+    tag.expand if tag.locals.asset = tag.locals.page.assets.playables.find(:first)
   end
   
   desc %{
@@ -134,7 +134,7 @@ module AssetPlayerTags
   tag "children:first_with_playable" do |tag|
     options = children_find_options(tag)
     children = tag.locals.children.find(:all, options)
-    if first = children.select{|child| child.assets.playable.count > 0}.first
+    if first = children.select{|child| child.assets.playables.count > 0}.first
       tag.locals.page = first
       tag.expand
     end
