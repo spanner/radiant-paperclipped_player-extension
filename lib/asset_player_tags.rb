@@ -29,7 +29,7 @@ module AssetPlayerTags
     if asset.playable?
       url = asset.asset.url
       width = options['width'] || 400
-      height = options['height'] || asset.movie? ? 327 : 27
+      height = options['height'] || asset.video? ? 327 : 27
       fc = options['frontcolor'] || '4d4e53'
       bc = options['backcolor'] || 'ffffff'
       version = options['version'] || '9'
