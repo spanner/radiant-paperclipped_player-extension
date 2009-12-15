@@ -4,6 +4,13 @@ module AssetPlayerTags
   class TagError < StandardError; end
   
   desc %{
+    Renders a script tag that will bring in the javascripts necessary to use the assets player on a page.
+  }
+  tag 'assets:player_js' do |tag|
+    %{<script src="/javascripts/swfobject.js" type="text/javascript"></script>}
+  end
+  
+  desc %{
     Renders a flash-based media player suitable to the current asset file. This works for audio and video but currently is only tested with .flv and .mp3 files. An error will appear if the asset is not audio or video.
     
     With video, you can specify a pre-roll image with the parameter image="asset id". If none is specified then we'll use the first image attached to the same page.
@@ -14,7 +21,7 @@ module AssetPlayerTags
     * height (in pixels. default is 27 for audio, 327 for video. 27px is the height of the controls)
     * frontcolor (default is #4d4e53. aka Cool Grey 11)
     * backcolor (default is white)
-    * allowFullScreen (whether permitted. default is true for video, false for audio)
+    * fullscreen (whether permitted. default is true for video. audio files don't show the button anyway.)
     * autoplay (default is false)
     * version (flash player version required. default is 9)
 
@@ -32,28 +39,37 @@ module AssetPlayerTags
       height = options['height'] || asset.video? ? 327 : 27
       fc = options['frontcolor'] || '4d4e53'
       bc = options['backcolor'] || 'ffffff'
-      version = options['version'] || '9'
+      version = options['version'] || '9.0.0'
       autoplay = options['autoplay'] || 'false'
+      fullscreen = options['fullscreen'] || 'false'
       
       result = %{
-<div id="player_#{asset.id}"></div>
+<div id="player_#{asset.id}" class="player"><p class="failure">Javascript disabled?</p></div>
 <script type="text/javascript">
   //<![CDATA[
-    var so = new SWFObject("/flash/mpw_player.swf", "swfplayer_#{asset.id}", "#{width}", "#{height}", "#{version}", "#{bc}"); so.addVariable("backcolor","#{bc}"); so.addVariable("frontcolor","#{fc}"); so.addVariable("fullscreen","false"); so.addVariable("autoplay","#{autoplay}");}
-      if asset.movie?
-        result << %{so.addVariable("flv", "#{url}");}
-        result << %{so.addParam("allowFullScreen", "#{true unless options['allowFullScreen'] == 'false'}");}
+    mpw_vars = {
+      backcolor: "#{bc}",
+      frontcolor: "#{fc}",
+      autoplay: "#{autoplay}"
+    };
+    }
+      if asset.video?
+        result << %{
+    mpw_vars['flv'] = "#{url}";
+    mpw_vars['fullscreen'] = "#{'true' unless options['fullscreen'] == 'false'}";
+      }
         if options['image'] && cover = Asset.find_by_id(options['image'])
-          result << %{so.addVariable("jpg", "#{cover.thumbnail('video')}");}
-        elsif cover = tag.locals.page.assets.images.first
-          result << %{so.addVariable("jpg", "#{cover.thumbnail('video')}");}
+          result << %{
+    mpw_vars['jpg'] = "#{cover.thumbnail('video')}";}
         end
       else
-        result << %{so.addVariable("mp3", "#{url}");}
-        result << %{so.addParam("allowFullScreen", "#{false unless options['allowFullScreen'] == 'true'}");}
+        result << %{
+    mpw_vars['mp3'] = "#{url}";
+    mpw_vars['fullscreen'] = "false";
+      }
       end
       result << %{
-    so.write("player_#{asset.id}");
+    swfobject.embedSWF("/flash/mpw_player.swf", "player_#{asset.id}", "#{width}", "#{height}", "#{version}", "/flash/expressInstall.swf", mpw_vars); 
   //]]>
 </script>}
     else

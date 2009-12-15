@@ -2,7 +2,7 @@
 # require_dependency 'application_controller'
 
 class PaperclippedPlayerExtension < Radiant::Extension
-  version "0.2"
+  version "0.3"
   description "Adds audio and video player tags to paperclipped and some useful conditionals around them"
   url "http://spanner.org/radiant/paperclipped_player"
   
@@ -14,8 +14,7 @@ class PaperclippedPlayerExtension < Radiant::Extension
   def activate
     AssetType.new :playable, :mime_types => AssetType.mime_types_for(:audio, :video)
     Page.send :include, AssetPlayerTags
-    AssetsHelper.send :include, AssetPlayerHelper
-    Admin::AssetsHelper.send :include, AssetPlayerHelper
+    Admin::AssetsController.send :helper, AssetPlayerHelper
   end
 
 end
